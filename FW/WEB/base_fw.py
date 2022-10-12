@@ -1,0 +1,56 @@
+import allure
+from allure_commons.types import AttachmentType
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+
+class BaseFW:
+
+    def __init__(self, ApplicationManager):
+        self.manager = ApplicationManager
+
+    @allure.step('get_driver')
+    def get_driver(self):
+        if self.manager.driver is None:
+            self.manager.driver = self.manager.web_driver.driver_start()
+        return self.manager.driver
+
+    @allure.step('Открыть страницу {url}')
+    def open_main_page(self, url):
+        self.get_driver().get(url)
+
+    @allure.step('screenshot')
+    def allure_screenshot(self):
+        try:
+            allure.attach(self.get_driver().get_screenshot_as_png(), name="Screenshot", attachment_type=AttachmentType.PNG)
+        except Exception as e:
+            print(str(e))
+
+    @allure.step('send_keys')
+    def send_keys(self, locator, text):
+        self.get_driver().find_element(locator[0], locator[1]).send_keys(text)
+
+    @allure.step('click')
+    def click(self, locator):
+        self.get_driver().find_element(locator[0], locator[1]).click()
+
+    @allure.step('get_text')
+    def get_text(self, locator):
+        return self.get_driver().find_element(locator[0], locator[1]).text
+
+    @allure.step('Крутой какойто выборэлемента ')
+    def find_element(self, locator):
+        try:
+            web_element = WebDriverWait(self.get_driver(), 10).until(EC.presence_of_element_located(locator))
+            return web_element
+        except:
+            self.allure_screenshot()
+            raise
+
+    @allure.step('Крутой какойто выборэлементов ')
+    def find_elements(self, locator):
+        try:
+            return WebDriverWait(self.get_driver(), 10).until(EC.presence_of_all_elements_located(locator))
+        except:
+            self.allure_screenshot()
+            raise
